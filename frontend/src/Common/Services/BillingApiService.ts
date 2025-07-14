@@ -36,6 +36,7 @@ export interface InvoiceItem {
 
 export interface CreateInvoiceRequest {
   customerId: number;
+  date: string;
   dueDate: string;
   items: CreateInvoiceItemRequest[];
   notes?: string;
