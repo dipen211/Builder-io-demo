@@ -1,26 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
-import {
+import { CURRENCY_CONFIG } from "../../../Common/Constants/Constants";
+import BillingApiService, {
   Customer,
   CreateInvoiceRequest,
   CreateInvoiceItemRequest,
-} from "../Model/Billing.interfaces";
-import { CURRENCY_CONFIG } from "../../../Common/Constants/Constants";
+} from "../../../Common/Services/BillingApiService";
 
 interface InvoiceFormData {
   customerId: string;
   dueDate: string;
   items: CreateInvoiceItemRequest[];
+  notes: string;
 }
 
 const CreateInvoice: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const [invoice, setInvoice] = useState<InvoiceFormData>({
     customerId: "",
     dueDate: "",
     items: [{ description: "", quantity: 1, unitPrice: 0 }],
+    notes: "",
   });
 
   useEffect(() => {
@@ -29,14 +34,26 @@ const CreateInvoice: React.FC = () => {
 
   const loadCustomers = async () => {
     try {
-      // Mock data for demo
-      const mockCustomers: Customer[] = [
+      setLoading(true);
+      setError(null);
+
+      // Load all customers (no pagination for dropdown)
+      const result = await BillingApiService.getCustomers(undefined, 1, 100);
+      setCustomers(result.items);
+    } catch (err: any) {
+      setError("Failed to load customers: " + (err.message || "Unknown error"));
+      console.error("Load customers error:", err);
+
+      // Fallback to mock data if API fails
+      setCustomers([
         {
           id: 1,
           name: "John Doe",
           email: "john@example.com",
           phone: "555-0101",
           address: "123 Main St",
+          totalInvoices: 0,
+          totalAmount: 0,
         },
         {
           id: 2,
@@ -44,6 +61,8 @@ const CreateInvoice: React.FC = () => {
           email: "jane@example.com",
           phone: "555-0102",
           address: "456 Oak Ave",
+          totalInvoices: 0,
+          totalAmount: 0,
         },
         {
           id: 3,
@@ -51,20 +70,12 @@ const CreateInvoice: React.FC = () => {
           email: "billing@acme.com",
           phone: "555-0103",
           address: "789 Business Blvd",
+          totalInvoices: 0,
+          totalAmount: 0,
         },
-        {
-          id: 4,
-          name: "XYZ Company",
-          email: "finance@xyz.com",
-          phone: "555-0104",
-          address: "321 Corporate Dr",
-        },
-      ];
-
-      setCustomers(mockCustomers);
-    } catch (err) {
-      setError("Failed to load customers");
-      console.error("Load customers error:", err);
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,42 +122,134 @@ const CreateInvoice: React.FC = () => {
     return calculateSubTotal() + calculateTax();
   };
 
+  const validateForm = (): string | null => {
+    if (!invoice.customerId) {
+      return "Please select a customer";
+    }
+
+    if (!invoice.dueDate) {
+      return "Please select a due date";
+    }
+
+    if (new Date(invoice.dueDate) < new Date()) {
+      return "Due date must be today or in the future";
+    }
+
+    if (invoice.items.length === 0) {
+      return "Please add at least one item";
+    }
+
+    for (let i = 0; i < invoice.items.length; i++) {
+      const item = invoice.items[i];
+      if (!item.description.trim()) {
+        return `Item ${i + 1}: Description is required`;
+      }
+      if (item.quantity <= 0) {
+        return `Item ${i + 1}: Quantity must be greater than 0`;
+      }
+      if (item.unitPrice <= 0) {
+        return `Item ${i + 1}: Unit price must be greater than 0`;
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     try {
-      setLoading(true);
+      setSubmitting(true);
       setError(null);
+      setSuccess(null);
 
       const invoiceData: CreateInvoiceRequest = {
         customerId: parseInt(invoice.customerId),
         dueDate: invoice.dueDate,
         items: invoice.items,
+        notes: invoice.notes.trim() || undefined,
       };
 
-      // Mock creating invoice
-      console.log("Creating invoice:", invoiceData);
+      const createdInvoice = await BillingApiService.createInvoice(invoiceData);
 
-      // Reset form
+      // Reset form on success
       setInvoice({
         customerId: "",
         dueDate: "",
         items: [{ description: "", quantity: 1, unitPrice: 0 }],
+        notes: "",
       });
 
-      alert("Invoice created successfully!");
-    } catch (err) {
-      setError("Failed to create invoice");
+      setSuccess(
+        `Invoice ${createdInvoice.invoiceNumber} created successfully!`,
+      );
+
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err: any) {
+      setError(err.message || "Failed to create invoice");
       console.error("Create invoice error:", err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  const resetForm = () => {
+    setInvoice({
+      customerId: "",
+      dueDate: "",
+      items: [{ description: "", quantity: 1, unitPrice: 0 }],
+      notes: "",
+    });
+    setError(null);
+    setSuccess(null);
+  };
+
+  // Set default due date to 30 days from now
+  useEffect(() => {
+    if (!invoice.dueDate) {
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+      setInvoice((prev) => ({
+        ...prev,
+        dueDate: defaultDueDate.toISOString().split("T")[0],
+      }));
+    }
+  }, []);
 
   return (
     <div className="create-invoice">
       <h2 className="page-title">Create New Invoice</h2>
 
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          {error}
+          <button
+            onClick={() => setError(null)}
+            style={{ marginLeft: "10px", padding: "5px 10px" }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {success && (
+        <div className="success">
+          {success}
+          <button
+            onClick={() => setSuccess(null)}
+            style={{ marginLeft: "10px", padding: "5px 10px" }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       <div className="card">
         <div className="card-content">
@@ -160,14 +263,22 @@ const CreateInvoice: React.FC = () => {
                   setInvoice({ ...invoice, customerId: e.target.value })
                 }
                 required
+                disabled={submitting || loading}
               >
-                <option value="">Select a customer</option>
+                <option value="">
+                  {loading ? "Loading customers..." : "Select a customer"}
+                </option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
-                    {customer.name}
+                    {customer.name} - {customer.email}
                   </option>
                 ))}
               </select>
+              {customers.length === 0 && !loading && (
+                <small style={{ color: "#666" }}>
+                  No customers available. Please add a customer first.
+                </small>
+              )}
             </div>
 
             <div className="form-group">
@@ -180,6 +291,22 @@ const CreateInvoice: React.FC = () => {
                   setInvoice({ ...invoice, dueDate: e.target.value })
                 }
                 required
+                disabled={submitting}
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Notes</label>
+              <textarea
+                className="form-textarea"
+                placeholder="Optional notes for this invoice..."
+                value={invoice.notes}
+                onChange={(e) =>
+                  setInvoice({ ...invoice, notes: e.target.value })
+                }
+                disabled={submitting}
+                rows={3}
               />
             </div>
 
@@ -203,7 +330,7 @@ const CreateInvoice: React.FC = () => {
                         <input
                           type="text"
                           className="form-input"
-                          placeholder="Description"
+                          placeholder="Item description"
                           value={item.description}
                           onChange={(e) =>
                             handleItemChange(
@@ -213,6 +340,7 @@ const CreateInvoice: React.FC = () => {
                             )
                           }
                           required
+                          disabled={submitting}
                         />
                       </td>
                       <td>
@@ -220,6 +348,7 @@ const CreateInvoice: React.FC = () => {
                           type="number"
                           className="form-input"
                           min="1"
+                          max="10000"
                           value={item.quantity}
                           onChange={(e) =>
                             handleItemChange(
@@ -229,6 +358,7 @@ const CreateInvoice: React.FC = () => {
                             )
                           }
                           required
+                          disabled={submitting}
                         />
                       </td>
                       <td>
@@ -247,6 +377,7 @@ const CreateInvoice: React.FC = () => {
                             )
                           }
                           required
+                          disabled={submitting}
                         />
                       </td>
                       <td>
@@ -259,7 +390,7 @@ const CreateInvoice: React.FC = () => {
                           type="button"
                           className="btn btn-secondary"
                           onClick={() => handleRemoveItem(index)}
-                          disabled={invoice.items.length === 1}
+                          disabled={invoice.items.length === 1 || submitting}
                           style={{ fontSize: "0.8rem", padding: "0.5rem" }}
                         >
                           Remove
@@ -275,6 +406,7 @@ const CreateInvoice: React.FC = () => {
                 className="btn btn-secondary"
                 onClick={handleAddItem}
                 style={{ marginTop: "1rem" }}
+                disabled={submitting}
               >
                 Add Item
               </button>
@@ -319,21 +451,16 @@ const CreateInvoice: React.FC = () => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading}
+                disabled={submitting || customers.length === 0}
               >
-                {loading ? "Creating..." : "Create Invoice"}
+                {submitting ? "Creating Invoice..." : "Create Invoice"}
               </button>
 
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => {
-                  setInvoice({
-                    customerId: "",
-                    dueDate: "",
-                    items: [{ description: "", quantity: 1, unitPrice: 0 }],
-                  });
-                }}
+                onClick={resetForm}
+                disabled={submitting}
               >
                 Reset Form
               </button>
