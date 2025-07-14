@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "@/Common/Constants/Enums";
+import { InvoiceStatus } from "../Constants/Enums";
 
 export const UtilityHelper = {
   generateId: (): string => {
