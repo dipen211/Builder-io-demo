@@ -1,4 +1,4 @@
-import httpRequest from "@/Common/Services/httpRequest";
+import httpRequest from "../../../Common/Services/httpRequest";
 import {
   Invoice,
   Customer,
