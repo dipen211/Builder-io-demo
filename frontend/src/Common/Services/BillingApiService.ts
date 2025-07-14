@@ -190,28 +190,6 @@ export class BillingApiService {
     );
   }
 
-  static async getInvoice(id: number): Promise<Invoice> {
-    return this.tryApiCall(
-      async () => {
-        const response = await httpRequest.get<ApiResponse<Invoice>>(
-          `/invoices/${id}`,
-        );
-        if (!response.data.success) {
-          throw new Error(response.data.message || "Failed to fetch invoice");
-        }
-        return response.data.data;
-      },
-      async () => {
-        const invoices = await DemoDataService.getInvoices();
-        const invoice = invoices.items.find((i) => i.id === id);
-        if (!invoice) {
-          throw new Error("Invoice not found");
-        }
-        return invoice;
-      },
-    );
-  }
-
   static async createInvoice(
     invoiceData: CreateInvoiceRequest,
   ): Promise<Invoice> {
@@ -278,28 +256,6 @@ export class BillingApiService {
     );
   }
 
-  static async getCustomer(id: number): Promise<Customer> {
-    return this.tryApiCall(
-      async () => {
-        const response = await httpRequest.get<ApiResponse<Customer>>(
-          `/customers/${id}`,
-        );
-        if (!response.data.success) {
-          throw new Error(response.data.message || "Failed to fetch customer");
-        }
-        return response.data.data;
-      },
-      async () => {
-        const customers = await DemoDataService.getCustomers();
-        const customer = customers.items.find((c) => c.id === id);
-        if (!customer) {
-          throw new Error("Customer not found");
-        }
-        return customer;
-      },
-    );
-  }
-
   static async createCustomer(
     customerData: CreateCustomerRequest,
   ): Promise<Customer> {
@@ -315,34 +271,6 @@ export class BillingApiService {
         return response.data.data;
       },
       () => DemoDataService.createCustomer(customerData),
-    );
-  }
-
-  static async updateCustomer(
-    id: number,
-    customerData: CreateCustomerRequest,
-  ): Promise<Customer> {
-    return this.tryApiCall(
-      async () => {
-        const response = await httpRequest.put<ApiResponse<Customer>>(
-          `/customers/${id}`,
-          customerData,
-        );
-        if (!response.data.success) {
-          throw new Error(response.data.message || "Failed to update customer");
-        }
-        return response.data.data;
-      },
-      async () => {
-        // For demo, just return the updated customer data
-        const customers = await DemoDataService.getCustomers();
-        const customer = customers.items.find((c) => c.id === id);
-        if (!customer) {
-          throw new Error("Customer not found");
-        }
-        Object.assign(customer, customerData);
-        return customer;
-      },
     );
   }
 
