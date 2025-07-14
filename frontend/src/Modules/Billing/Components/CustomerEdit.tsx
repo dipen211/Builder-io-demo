@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BillingApiService, {
-  Customer,
   CreateCustomerRequest,
 } from "../../../Common/Services/BillingApiService";
 import { Routes } from "../../../Common/Constants/Routes";
