@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { LoadingState } from "@/Common/Constants/Enums";
+import { LoadingState } from "../Constants/Enums";
 
 // Generic async data fetching hook
 export function useAsyncData<T>(
