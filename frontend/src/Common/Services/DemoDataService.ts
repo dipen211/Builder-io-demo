@@ -447,6 +447,52 @@ export class DemoDataService {
 
     this.demoCustomers.splice(index, 1);
   }
+
+  // Individual record getters
+  static async getInvoice(id: number): Promise<Invoice> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const invoice = this.demoInvoices.find((i) => i.id === id);
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+
+    return invoice;
+  }
+
+  static async getCustomer(id: number): Promise<Customer> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const customer = this.demoCustomers.find((c) => c.id === id);
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    return customer;
+  }
+
+  static async updateCustomer(
+    id: number,
+    customerData: any,
+  ): Promise<Customer> {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    const customer = this.demoCustomers.find((c) => c.id === id);
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    // Update customer data
+    customer.name = customerData.name;
+    customer.email = customerData.email;
+    customer.phone = customerData.phone || "";
+    customer.address = customerData.address || "";
+
+    return customer;
+  }
 }
 
 export default DemoDataService;
