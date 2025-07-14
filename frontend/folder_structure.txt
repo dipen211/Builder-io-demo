@@ -1,0 +1,100 @@
+Frontend Project Structure
+========================
+
+src/
+├── App.tsx                          # Main application component with routing
+├── index.tsx                        # Application entry point
+├── react-app-env.d.ts              # React TypeScript declarations
+├── reportWebVitals.ts               # Performance monitoring
+├── setupTests.ts                    # Test setup configuration
+│
+├── Assets/                          # Static assets
+│   ├── Icons/                       # SVG icons and icon components
+│   ├── Images/                      # Images and graphics
+│   │   ├── Logo/                    # Brand logos
+│   │   └── User/                    # User avatars and profile images
+│   └── Styles/                      # Global styles and themes
+│       └── Styles.css               # Main stylesheet
+│
+├── Common/                          # Shared/reusable components and utilities
+│   ├── Components/                  # Reusable UI components
+│   │   ├── FormControls/           # Form input components
+│   │   │   ├── DateInput.tsx
+│   │   │   ├── SelectInput.tsx
+│   │   │   ├── TextInput.tsx
+│   │   │   └── Model/              # Form component interfaces
+│   │   │       └── FormControls.interfaces.tsx
+│   │   └── Layouts/                # Layout components
+│   │       ├── Header.tsx
+│   │       ├── Header.css
+│   │       └── Layout.tsx
+│   │
+│   ├── Constants/                   # Application constants
+│   │   ├── Auth.ts                 # Authentication constants
+│   │   ├── Constants.ts            # General app constants
+│   │   ├── Enums.ts                # Enumeration definitions
+│   │   ├── Routes.ts               # Route definitions
+│   │   └── SessionStorage.ts       # Session storage keys and utilities
+│   │
+│   ├── Hooks/                       # Custom React hooks
+│   │   └── CustomHooks.tsx         # Reusable custom hooks
+│   │
+│   ├── Services/                    # API and external service interfaces
+│   │   ├── httpRequest.ts          # HTTP client service
+│   │   └── Endpoints/              # API endpoint services
+│   │       └── Dashboard/
+│   │           └── Dashboard.tsx
+│   │
+│   ├── Theme/                       # Application theming
+│   │   └── Theme.ts                # Theme configuration and variables
+│   │
+│   ├── Utils/                       # Utility functions
+│   │   ├── Formatters.ts           # Data formatting utilities
+│   │   └── Helper.ts               # General helper functions
+│   │
+│   └── Validator/                   # Form and data validation
+│       └── CustomValidators.ts     # Validation rules and functions
+│
+└── Modules/                         # Feature-based modules
+    ├── Dashboard/                   # Dashboard module
+    │   ├── Dashboard.tsx           # Main dashboard component
+    │   ├── Components/             # Dashboard-specific components
+    │   │   ├── Charts/            # Chart components
+    │   │   └── UserDetails/       # User detail components
+    │   └── Model/                  # Dashboard interfaces and types
+    │       └── Dashboard.interfaces.tsx
+    │
+    ├── Billing/                     # Billing management module
+    │   ├── BillingModule.tsx       # Main billing component
+    │   ├── Components/             # Billing-specific components
+    │   │   ├── CreateInvoice.tsx   # Invoice creation form
+    │   │   ├── CustomerList.tsx    # Customer management
+    │   │   └── InvoiceList.tsx     # Invoice listing and management
+    │   ├── Model/                  # Billing interfaces and types
+    │   │   └── Billing.interfaces.tsx
+    │   └── Services/               # Billing API services
+    │       └── BillingService.ts
+    │
+    └── Profile/                     # User profile module
+        ├── Profile.tsx             # Profile management component
+        ├── Components/             # Profile-specific components
+        ├── Model/                  # Profile interfaces and types
+        └── Services/               # Profile API services
+
+Configuration Files:
+├── .env                            # Environment variables
+├── .eslintrc.json                  # ESLint configuration
+├── .gitignore                      # Git ignore rules
+├── package.json                    # NPM dependencies and scripts
+├── tsconfig.json                   # TypeScript configuration
+└── README.md                       # Project documentation
+
+Key Features:
+- Modular architecture with feature-based organization
+- TypeScript for type safety and better development experience
+- Reusable components and utilities in Common folder
+- Centralized constants, themes, and validation rules
+- Custom hooks for state management and side effects
+- HTTP service with error handling and authentication
+- Responsive design with modern CSS
+- Professional folder structure following industry standards
