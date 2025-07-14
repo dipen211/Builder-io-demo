@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
+
 export enum InvoiceStatus {
   DRAFT = "Draft",
   SENT = "Sent",
