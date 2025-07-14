@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
 import BillingApiService, {
   Customer,
   CreateCustomerRequest,
 } from "../../../Common/Services/BillingApiService";
+import { Routes } from "../../../Common/Constants/Routes";
 
 const CustomerList: React.FC = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -335,8 +338,7 @@ const CustomerList: React.FC = () => {
                             padding: "0.5rem",
                           }}
                           onClick={() => {
-                            // In a real app, this would navigate to customer detail
-                            console.log("View customer:", customer.id);
+                            navigate(`${Routes.CUSTOMERS}/view/${customer.id}`);
                           }}
                         >
                           View
@@ -349,8 +351,7 @@ const CustomerList: React.FC = () => {
                             padding: "0.5rem",
                           }}
                           onClick={() => {
-                            // In a real app, this would open edit form
-                            console.log("Edit customer:", customer.id);
+                            navigate(`${Routes.CUSTOMERS}/edit/${customer.id}`);
                           }}
                         >
                           Edit
