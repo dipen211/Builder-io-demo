@@ -222,7 +222,16 @@ const CreateInvoice: React.FC = () => {
 
   return (
     <div className="create-invoice">
-      <h2 className="page-title">Create New Invoice</h2>
+      <div className="page-header">
+        <h2 className="page-title">Create New Invoice</h2>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate(Routes.INVOICES)}
+          disabled={submitting}
+        >
+          Back to Invoices
+        </button>
+      </div>
 
       {error && (
         <div className="error">
