@@ -456,6 +456,15 @@ const CreateInvoice: React.FC = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
+                onClick={() => navigate(Routes.INVOICES)}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={resetForm}
                 disabled={submitting}
               >
