@@ -5,12 +5,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import Layout from "@/Common/Components/Layouts/Layout";
-import Dashboard from "@/Modules/Dashboard/Dashboard";
-import BillingModule from "@/Modules/Billing/BillingModule";
-import Profile from "@/Modules/Profile/Profile";
-import { Routes as AppRoutes } from "@/Common/Constants/Routes";
-import "@/Assets/Styles/Styles.css";
+import Layout from "./Common/Components/Layouts/Layout";
+import Dashboard from "./Modules/Dashboard/Dashboard";
+import BillingModule from "./Modules/Billing/BillingModule";
+import Profile from "./Modules/Profile/Profile";
+import { Routes as AppRoutes } from "./Common/Constants/Routes";
+import "./Assets/Styles/Styles.css";
 
 const App: React.FC = () => {
   return (
