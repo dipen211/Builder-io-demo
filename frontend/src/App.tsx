@@ -20,7 +20,23 @@ const App: React.FC = () => {
           <Route path={AppRoutes.DASHBOARD} element={<Dashboard />} />
           <Route path={AppRoutes.BILLING} element={<BillingModule />} />
           <Route path={AppRoutes.INVOICES} element={<BillingModule />} />
+          <Route
+            path={`${AppRoutes.INVOICES}/view/:id`}
+            element={<BillingModule />}
+          />
+          <Route
+            path={`${AppRoutes.INVOICES}/edit/:id`}
+            element={<BillingModule />}
+          />
           <Route path={AppRoutes.CUSTOMERS} element={<BillingModule />} />
+          <Route
+            path={`${AppRoutes.CUSTOMERS}/view/:id`}
+            element={<BillingModule />}
+          />
+          <Route
+            path={`${AppRoutes.CUSTOMERS}/edit/:id`}
+            element={<BillingModule />}
+          />
           <Route path={AppRoutes.CREATE_INVOICE} element={<BillingModule />} />
           <Route path={AppRoutes.PROFILE} element={<Profile />} />
           <Route
