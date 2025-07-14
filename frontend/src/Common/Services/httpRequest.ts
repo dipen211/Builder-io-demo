@@ -1,9 +1,9 @@
-import { API_CONFIG } from "@/Common/Constants/Constants";
-import { HttpMethod } from "@/Common/Constants/Enums";
+import { API_CONFIG } from "../Constants/Constants";
+import { HttpMethod } from "../Constants/Enums";
 import {
   SessionStorageUtil,
   SESSION_STORAGE_KEYS,
-} from "@/Common/Constants/SessionStorage";
+} from "../Constants/SessionStorage";
 
 export interface ApiResponse<T = any> {
   data: T;
