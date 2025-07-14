@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
-import { Customer, CreateCustomerRequest } from "../Model/Billing.interfaces";
-import { InvoiceStatus } from "../../../Common/Constants/Enums";
+import BillingApiService, {
+  Customer,
+  CreateCustomerRequest,
+} from "../../../Common/Services/BillingApiService";
 
 const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [newCustomer, setNewCustomer] = useState<CreateCustomerRequest>({
     name: "",
     email: "",
@@ -17,24 +26,36 @@ const CustomerList: React.FC = () => {
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [pageNumber, searchTerm]);
 
   const loadCustomers = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Mock data for demo
-      const mockCustomers: Customer[] = [
+      const result = await BillingApiService.getCustomers(
+        searchTerm || undefined,
+        pageNumber,
+        pageSize,
+      );
+
+      setCustomers(result.items);
+      setTotalPages(result.totalPages);
+      setTotalCount(result.totalCount);
+    } catch (err: any) {
+      setError(err.message || "Failed to load customers");
+      console.error("Customers error:", err);
+
+      // Fallback to mock data if API fails
+      setCustomers([
         {
           id: 1,
           name: "John Doe",
           email: "john@example.com",
           phone: "555-0101",
           address: "123 Main St, City, State 12345",
-          invoices: [
-            { id: 1, total: 1250.0, status: InvoiceStatus.PAID } as any,
-          ],
+          totalInvoices: 1,
+          totalAmount: 1250.0,
         },
         {
           id: 2,
@@ -42,36 +63,10 @@ const CustomerList: React.FC = () => {
           email: "jane@example.com",
           phone: "555-0102",
           address: "456 Oak Ave, City, State 12345",
-          invoices: [
-            { id: 2, total: 890.0, status: InvoiceStatus.SENT } as any,
-          ],
+          totalInvoices: 1,
+          totalAmount: 890.0,
         },
-        {
-          id: 3,
-          name: "Acme Corp",
-          email: "billing@acme.com",
-          phone: "555-0103",
-          address: "789 Business Blvd, City, State 12345",
-          invoices: [
-            { id: 3, total: 2350.0, status: InvoiceStatus.DRAFT } as any,
-          ],
-        },
-        {
-          id: 4,
-          name: "XYZ Company",
-          email: "finance@xyz.com",
-          phone: "555-0104",
-          address: "321 Corporate Dr, City, State 12345",
-          invoices: [
-            { id: 4, total: 500.0, status: InvoiceStatus.OVERDUE } as any,
-          ],
-        },
-      ];
-
-      setCustomers(mockCustomers);
-    } catch (err) {
-      setError("Failed to load customers");
-      console.error("Customers error:", err);
+      ]);
     } finally {
       setLoading(false);
     }
@@ -79,37 +74,64 @@ const CustomerList: React.FC = () => {
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      // Mock adding customer
-      const mockNewCustomer: Customer = {
-        id: customers.length + 1,
-        name: newCustomer.name,
-        email: newCustomer.email,
-        phone: newCustomer.phone || "",
-        address: newCustomer.address || "",
-        invoices: [],
-      };
 
-      setCustomers([...customers, mockNewCustomer]);
+    if (!newCustomer.name.trim() || !newCustomer.email.trim()) {
+      setError("Name and email are required");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      await BillingApiService.createCustomer(newCustomer);
+
+      // Reset form and reload customers
       setNewCustomer({ name: "", email: "", phone: "", address: "" });
       setShowAddForm(false);
-    } catch (err) {
-      setError("Failed to add customer");
+      setPageNumber(1); // Go to first page to see new customer
+      loadCustomers();
+    } catch (err: any) {
+      setError(err.message || "Failed to add customer");
       console.error("Add customer error:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const calculateCustomerTotal = (invoices?: any[]): number => {
-    if (!invoices) return 0;
-    return invoices.reduce((sum, invoice) => sum + invoice.total, 0);
+  const handleDeleteCustomer = async (
+    customerId: number,
+    customerName: string,
+  ) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete customer "${customerName}"?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await BillingApiService.deleteCustomer(customerId);
+      loadCustomers(); // Reload the list
+    } catch (err: any) {
+      setError(err.message || "Failed to delete customer");
+      console.error("Delete customer error:", err);
+    }
   };
 
-  if (loading) {
-    return <div className="loading">Loading customers...</div>;
-  }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPageNumber(1); // Reset to first page when searching
+    loadCustomers();
+  };
 
-  if (error) {
-    return <div className="error">{error}</div>;
+  if (loading && customers.length === 0) {
+    return (
+      <div className="customer-list">
+        <div className="loading">Loading customers...</div>
+      </div>
+    );
   }
 
   return (
@@ -119,9 +141,57 @@ const CustomerList: React.FC = () => {
         <button
           className="btn btn-primary"
           onClick={() => setShowAddForm(!showAddForm)}
+          disabled={submitting}
         >
           {showAddForm ? "Cancel" : "Add Customer"}
         </button>
+      </div>
+
+      {error && (
+        <div className="error">
+          {error}
+          <button
+            onClick={() => setError(null)}
+            style={{ marginLeft: "10px", padding: "5px 10px" }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Search Form */}
+      <div className="card" style={{ marginBottom: "1rem" }}>
+        <div className="card-content">
+          <form
+            onSubmit={handleSearch}
+            style={{ display: "flex", gap: "1rem", alignItems: "center" }}
+          >
+            <div className="form-group" style={{ margin: 0, flex: 1 }}>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Search customers by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn btn-secondary">
+              Search
+            </button>
+            {searchTerm && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setSearchTerm("");
+                  setPageNumber(1);
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </form>
+        </div>
       </div>
 
       {showAddForm && (
@@ -141,6 +211,7 @@ const CustomerList: React.FC = () => {
                     setNewCustomer({ ...newCustomer, name: e.target.value })
                   }
                   required
+                  disabled={submitting}
                 />
               </div>
 
@@ -154,6 +225,7 @@ const CustomerList: React.FC = () => {
                     setNewCustomer({ ...newCustomer, email: e.target.value })
                   }
                   required
+                  disabled={submitting}
                 />
               </div>
 
@@ -166,6 +238,7 @@ const CustomerList: React.FC = () => {
                   onChange={(e) =>
                     setNewCustomer({ ...newCustomer, phone: e.target.value })
                   }
+                  disabled={submitting}
                 />
               </div>
 
@@ -177,12 +250,27 @@ const CustomerList: React.FC = () => {
                   onChange={(e) =>
                     setNewCustomer({ ...newCustomer, address: e.target.value })
                   }
+                  disabled={submitting}
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary">
-                Add Customer
-              </button>
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={submitting}
+                >
+                  {submitting ? "Adding..." : "Add Customer"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowAddForm(false)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -191,71 +279,142 @@ const CustomerList: React.FC = () => {
       <div className="card">
         <div className="card-content">
           {customers.length === 0 ? (
-            <p>No customers found.</p>
+            <div style={{ textAlign: "center", padding: "2rem" }}>
+              <p>No customers found.</p>
+              <button className="btn btn-primary" onClick={loadCustomers}>
+                Refresh
+              </button>
+            </div>
           ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Contact</th>
-                  <th>Address</th>
-                  <th>Total Invoiced</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td>
-                      <strong>{customer.name}</strong>
-                    </td>
-                    <td>
-                      <div>
-                        <div>{customer.email}</div>
-                        <small style={{ color: "#666" }}>
-                          {customer.phone}
-                        </small>
-                      </div>
-                    </td>
-                    <td>
-                      <small style={{ color: "#666" }}>
-                        {customer.address}
-                      </small>
-                    </td>
-                    <td>
-                      <strong>
-                        {CurrencyFormatter.format(
-                          calculateCustomerTotal(customer.invoices),
-                        )}
-                      </strong>
-                      <br />
-                      <small style={{ color: "#666" }}>
-                        {customer.invoices?.length || 0} invoice
-                        {(customer.invoices?.length || 0) !== 1 ? "s" : ""}
-                      </small>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-secondary"
-                        style={{
-                          marginRight: "0.5rem",
-                          fontSize: "0.8rem",
-                          padding: "0.5rem",
-                        }}
-                      >
-                        View
-                      </button>
-                      <button
-                        className="btn btn-secondary"
-                        style={{ fontSize: "0.8rem", padding: "0.5rem" }}
-                      >
-                        Edit
-                      </button>
-                    </td>
+            <>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Address</th>
+                    <th>Total Invoiced</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customers.map((customer) => (
+                    <tr key={customer.id}>
+                      <td>
+                        <strong>{customer.name}</strong>
+                      </td>
+                      <td>
+                        <div>
+                          <div>{customer.email}</div>
+                          <small style={{ color: "#666" }}>
+                            {customer.phone}
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        <small style={{ color: "#666" }}>
+                          {customer.address}
+                        </small>
+                      </td>
+                      <td>
+                        <strong>
+                          {CurrencyFormatter.format(customer.totalAmount)}
+                        </strong>
+                        <br />
+                        <small style={{ color: "#666" }}>
+                          {customer.totalInvoices} invoice
+                          {customer.totalInvoices !== 1 ? "s" : ""}
+                        </small>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            marginRight: "0.5rem",
+                            fontSize: "0.8rem",
+                            padding: "0.5rem",
+                          }}
+                          onClick={() => {
+                            // In a real app, this would navigate to customer detail
+                            console.log("View customer:", customer.id);
+                          }}
+                        >
+                          View
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            marginRight: "0.5rem",
+                            fontSize: "0.8rem",
+                            padding: "0.5rem",
+                          }}
+                          onClick={() => {
+                            // In a real app, this would open edit form
+                            console.log("Edit customer:", customer.id);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            fontSize: "0.8rem",
+                            padding: "0.5rem",
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                          }}
+                          onClick={() =>
+                            handleDeleteCustomer(customer.id, customer.name)
+                          }
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "1rem",
+                    padding: "1rem 0",
+                  }}
+                >
+                  <div>
+                    Showing {customers.length} of {totalCount} customers
+                    {searchTerm && <span> (filtered by "{searchTerm}")</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() =>
+                        setPageNumber((prev) => Math.max(1, prev - 1))
+                      }
+                      disabled={pageNumber === 1 || loading}
+                    >
+                      Previous
+                    </button>
+                    <span style={{ padding: "0.5rem 1rem" }}>
+                      Page {pageNumber} of {totalPages}
+                    </span>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() =>
+                        setPageNumber((prev) => Math.min(totalPages, prev + 1))
+                      }
+                      disabled={pageNumber === totalPages || loading}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
