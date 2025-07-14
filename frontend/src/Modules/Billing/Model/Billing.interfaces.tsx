@@ -2,7 +2,7 @@ import {
   InvoiceStatus,
   CustomerType,
   PaymentMethod,
-} from "@/Common/Constants/Enums";
+} from "../../../Common/Constants/Enums";
 
 export interface Customer {
   id: number;
