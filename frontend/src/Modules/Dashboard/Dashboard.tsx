@@ -3,6 +3,7 @@ import {
   CurrencyFormatter,
   DateFormatter,
 } from "../../Common/Utils/Formatters";
+import { APP_CONFIG } from "../../Common/Constants/Constants";
 import BillingApiService, {
   DashboardStats,
   Invoice,
@@ -30,89 +31,12 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Try to load real data from API
       const dashboardData = await BillingApiService.getDashboardData();
       setStats(dashboardData.stats);
       setRecentInvoices(dashboardData.recentInvoices);
     } catch (err: any) {
-      console.error("Dashboard API error:", err);
-      setError("Unable to connect to server. Showing demo data.");
-
-      // Fallback to mock data if API fails
-      const mockStats: DashboardStats = {
-        totalRevenue: 4490.5,
-        pendingInvoices: 2,
-        totalCustomers: 4,
-        overdueInvoices: 1,
-        pendingAmount: 3240.5,
-        overdueAmount: 500.0,
-      };
-
-      const mockInvoices: Invoice[] = [
-        {
-          id: 1,
-          invoiceNumber: "INV-20241201-1001",
-          date: "2024-12-01",
-          dueDate: "2024-12-31",
-          customer: {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            phone: "555-0101",
-            address: "123 Main St",
-            totalInvoices: 1,
-            totalAmount: 1250.0,
-          },
-          subTotal: 1136.36,
-          taxAmount: 113.64,
-          total: 1250.0,
-          status: "Paid",
-          items: [],
-        },
-        {
-          id: 2,
-          invoiceNumber: "INV-20241202-1002",
-          date: "2024-12-02",
-          dueDate: "2025-01-01",
-          customer: {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            phone: "555-0102",
-            address: "456 Oak Ave",
-            totalInvoices: 1,
-            totalAmount: 890.0,
-          },
-          subTotal: 809.09,
-          taxAmount: 80.91,
-          total: 890.0,
-          status: "Sent",
-          items: [],
-        },
-        {
-          id: 3,
-          invoiceNumber: "INV-20241203-1003",
-          date: "2024-12-03",
-          dueDate: "2025-01-02",
-          customer: {
-            id: 3,
-            name: "Acme Corp",
-            email: "billing@acme.com",
-            phone: "555-0103",
-            address: "789 Business Blvd",
-            totalInvoices: 1,
-            totalAmount: 2350.0,
-          },
-          subTotal: 2136.36,
-          taxAmount: 213.64,
-          total: 2350.0,
-          status: "Draft",
-          items: [],
-        },
-      ];
-
-      setStats(mockStats);
-      setRecentInvoices(mockInvoices);
+      console.error("Dashboard error:", err);
+      setError("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -168,14 +92,32 @@ const Dashboard: React.FC = () => {
         </button>
       </div>
 
+      {APP_CONFIG.DEMO_MODE && (
+        <div
+          className="info"
+          style={{
+            marginBottom: "2rem",
+            backgroundColor: "#e3f2fd",
+            color: "#1976d2",
+            padding: "1rem",
+            borderRadius: "6px",
+            borderLeft: "4px solid #2196f3",
+          }}
+        >
+          🎮 <strong>Demo Mode:</strong> You're viewing sample data. The backend
+          API is not connected. All changes are temporary and will reset on
+          refresh.
+        </div>
+      )}
+
       {error && (
-        <div className="warning" style={{ marginBottom: "2rem" }}>
+        <div className="error" style={{ marginBottom: "2rem" }}>
           {error}
           <button
-            onClick={() => setError(null)}
+            onClick={refreshData}
             style={{ marginLeft: "10px", padding: "5px 10px" }}
           >
-            Dismiss
+            Retry
           </button>
         </div>
       )}
