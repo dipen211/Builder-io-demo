@@ -186,8 +186,9 @@ const CreateInvoice: React.FC = () => {
       setError(null);
       setSuccess(null);
 
-      const invoiceData: CreateInvoiceRequest = {
+            const invoiceData: CreateInvoiceRequest = {
         customerId: parseInt(invoice.customerId),
+        date: new Date().toISOString().split("T")[0],
         dueDate: invoice.dueDate,
         items: invoice.items,
         notes: invoice.notes.trim() || undefined,
@@ -195,9 +196,8 @@ const CreateInvoice: React.FC = () => {
 
       const createdInvoice = await BillingApiService.createInvoice(invoiceData);
 
-      // Reset form on success
-      setInvoice({
-        customerId: "",
+      // Navigate to the created invoice
+      navigate(`${Routes.INVOICES}/view/${createdInvoice.id}`);
         dueDate: "",
         items: [{ description: "", quantity: 1, unitPrice: 0 }],
         notes: "",
