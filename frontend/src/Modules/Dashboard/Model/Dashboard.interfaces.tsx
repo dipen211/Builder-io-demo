@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "@/Common/Constants/Enums";
+import { InvoiceStatus } from "../../../Common/Constants/Enums";
 
 export interface DashboardStats {
   totalRevenue: number;
