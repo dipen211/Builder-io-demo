@@ -1,4 +1,6 @@
 import httpRequest from "./httpRequest";
+import { APP_CONFIG } from "../Constants/Constants";
+import DemoDataService from "./DemoDataService";
 
 export interface Customer {
   id: number;
@@ -79,44 +81,78 @@ export interface PaginatedResult<T> {
 }
 
 export class BillingApiService {
+  private static async tryApiCall<T>(
+    apiCall: () => Promise<T>,
+    fallback: () => Promise<T>,
+  ): Promise<T> {
+    if (APP_CONFIG.DEMO_MODE || !APP_CONFIG.BACKEND_AVAILABLE) {
+      console.log("🎮 Demo mode: Using demo data instead of API");
+      return fallback();
+    }
+
+    try {
+      return await apiCall();
+    } catch (error) {
+      console.warn("⚠️ API call failed, falling back to demo data:", error);
+      return fallback();
+    }
+  }
+
   // Dashboard endpoints
   static async getDashboardStats(): Promise<DashboardStats> {
-    const response =
-      await httpRequest.get<ApiResponse<DashboardStats>>("/dashboard/stats");
-    if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to fetch dashboard stats",
-      );
-    }
-    return response.data.data;
+    return this.tryApiCall(
+      async () => {
+        const response =
+          await httpRequest.get<ApiResponse<DashboardStats>>(
+            "/dashboard/stats",
+          );
+        if (!response.data.success) {
+          throw new Error(
+            response.data.message || "Failed to fetch dashboard stats",
+          );
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getDashboardStats(),
+    );
   }
 
   static async getRecentInvoices(count: number = 5): Promise<Invoice[]> {
-    const response = await httpRequest.get<ApiResponse<Invoice[]>>(
-      `/dashboard/recent-invoices?count=${count}`,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Invoice[]>>(
+          `/dashboard/recent-invoices?count=${count}`,
+        );
+        if (!response.data.success) {
+          throw new Error(
+            response.data.message || "Failed to fetch recent invoices",
+          );
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getRecentInvoices(count),
     );
-    if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to fetch recent invoices",
-      );
-    }
-    return response.data.data;
   }
 
   static async getDashboardData(): Promise<{
     stats: DashboardStats;
     recentInvoices: Invoice[];
   }> {
-    const response =
-      await httpRequest.get<
-        ApiResponse<{ stats: DashboardStats; recentInvoices: Invoice[] }>
-      >("/dashboard");
-    if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to fetch dashboard data",
-      );
-    }
-    return response.data.data;
+    return this.tryApiCall(
+      async () => {
+        const response =
+          await httpRequest.get<
+            ApiResponse<{ stats: DashboardStats; recentInvoices: Invoice[] }>
+          >("/dashboard");
+        if (!response.data.success) {
+          throw new Error(
+            response.data.message || "Failed to fetch dashboard data",
+          );
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getDashboardData(),
+    );
   }
 
   // Invoice endpoints
@@ -128,63 +164,90 @@ export class BillingApiService {
     pageNumber?: number;
     pageSize?: number;
   }): Promise<PaginatedResult<Invoice>> {
-    const queryParams = new URLSearchParams();
+    return this.tryApiCall(
+      async () => {
+        const queryParams = new URLSearchParams();
 
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
+        if (filters) {
+          Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              queryParams.append(key, value.toString());
+            }
+          });
         }
-      });
-    }
 
-    const url = `/invoices${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-    const response =
-      await httpRequest.get<ApiResponse<PaginatedResult<Invoice>>>(url);
+        const url = `/invoices${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+        const response =
+          await httpRequest.get<ApiResponse<PaginatedResult<Invoice>>>(url);
 
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to fetch invoices");
-    }
-    return response.data.data;
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch invoices");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getInvoices(filters),
+    );
   }
 
   static async getInvoice(id: number): Promise<Invoice> {
-    const response = await httpRequest.get<ApiResponse<Invoice>>(
-      `/invoices/${id}`,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Invoice>>(
+          `/invoices/${id}`,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch invoice");
+        }
+        return response.data.data;
+      },
+      async () => {
+        const invoices = await DemoDataService.getInvoices();
+        const invoice = invoices.items.find((i) => i.id === id);
+        if (!invoice) {
+          throw new Error("Invoice not found");
+        }
+        return invoice;
+      },
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to fetch invoice");
-    }
-    return response.data.data;
   }
 
   static async createInvoice(
     invoiceData: CreateInvoiceRequest,
   ): Promise<Invoice> {
-    const response = await httpRequest.post<ApiResponse<Invoice>>(
-      "/invoices",
-      invoiceData,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.post<ApiResponse<Invoice>>(
+          "/invoices",
+          invoiceData,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to create invoice");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.createInvoice(invoiceData),
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to create invoice");
-    }
-    return response.data.data;
   }
 
   static async updateInvoiceStatus(
     id: number,
     status: string,
   ): Promise<Invoice> {
-    const response = await httpRequest.patch<ApiResponse<Invoice>>(
-      `/invoices/${id}/status`,
-      status,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.patch<ApiResponse<Invoice>>(
+          `/invoices/${id}/status`,
+          status,
+        );
+        if (!response.data.success) {
+          throw new Error(
+            response.data.message || "Failed to update invoice status",
+          );
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.updateInvoiceStatus(id, status),
     );
-    if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to update invoice status",
-      );
-    }
-    return response.data.data;
   }
 
   // Customer endpoints
@@ -193,78 +256,127 @@ export class BillingApiService {
     pageNumber?: number,
     pageSize?: number,
   ): Promise<PaginatedResult<Customer>> {
-    const queryParams = new URLSearchParams();
+    return this.tryApiCall(
+      async () => {
+        const queryParams = new URLSearchParams();
 
-    if (search) queryParams.append("search", search);
-    if (pageNumber) queryParams.append("pageNumber", pageNumber.toString());
-    if (pageSize) queryParams.append("pageSize", pageSize.toString());
+        if (search) queryParams.append("search", search);
+        if (pageNumber) queryParams.append("pageNumber", pageNumber.toString());
+        if (pageSize) queryParams.append("pageSize", pageSize.toString());
 
-    const url = `/customers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-    const response =
-      await httpRequest.get<ApiResponse<PaginatedResult<Customer>>>(url);
+        const url = `/customers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+        const response =
+          await httpRequest.get<ApiResponse<PaginatedResult<Customer>>>(url);
 
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to fetch customers");
-    }
-    return response.data.data;
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch customers");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getCustomers(search, pageNumber, pageSize),
+    );
   }
 
   static async getCustomer(id: number): Promise<Customer> {
-    const response = await httpRequest.get<ApiResponse<Customer>>(
-      `/customers/${id}`,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Customer>>(
+          `/customers/${id}`,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch customer");
+        }
+        return response.data.data;
+      },
+      async () => {
+        const customers = await DemoDataService.getCustomers();
+        const customer = customers.items.find((c) => c.id === id);
+        if (!customer) {
+          throw new Error("Customer not found");
+        }
+        return customer;
+      },
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to fetch customer");
-    }
-    return response.data.data;
   }
 
   static async createCustomer(
     customerData: CreateCustomerRequest,
   ): Promise<Customer> {
-    const response = await httpRequest.post<ApiResponse<Customer>>(
-      "/customers",
-      customerData,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.post<ApiResponse<Customer>>(
+          "/customers",
+          customerData,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to create customer");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.createCustomer(customerData),
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to create customer");
-    }
-    return response.data.data;
   }
 
   static async updateCustomer(
     id: number,
     customerData: CreateCustomerRequest,
   ): Promise<Customer> {
-    const response = await httpRequest.put<ApiResponse<Customer>>(
-      `/customers/${id}`,
-      customerData,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.put<ApiResponse<Customer>>(
+          `/customers/${id}`,
+          customerData,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to update customer");
+        }
+        return response.data.data;
+      },
+      async () => {
+        // For demo, just return the updated customer data
+        const customers = await DemoDataService.getCustomers();
+        const customer = customers.items.find((c) => c.id === id);
+        if (!customer) {
+          throw new Error("Customer not found");
+        }
+        Object.assign(customer, customerData);
+        return customer;
+      },
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to update customer");
-    }
-    return response.data.data;
   }
 
   static async deleteCustomer(id: number): Promise<void> {
-    const response = await httpRequest.delete<ApiResponse<void>>(
-      `/customers/${id}`,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.delete<ApiResponse<void>>(
+          `/customers/${id}`,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to delete customer");
+        }
+      },
+      () => DemoDataService.deleteCustomer(id),
     );
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to delete customer");
-    }
   }
 
   static async getCustomerInvoices(id: number): Promise<Invoice[]> {
-    const response = await httpRequest.get<ApiResponse<Invoice[]>>(
-      `/customers/${id}/invoices`,
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Invoice[]>>(
+          `/customers/${id}/invoices`,
+        );
+        if (!response.data.success) {
+          throw new Error(
+            response.data.message || "Failed to fetch customer invoices",
+          );
+        }
+        return response.data.data;
+      },
+      async () => {
+        const invoices = await DemoDataService.getInvoices();
+        return invoices.items.filter((invoice) => invoice.customer.id === id);
+      },
     );
-    if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to fetch customer invoices",
-      );
-    }
-    return response.data.data;
   }
 }
 
