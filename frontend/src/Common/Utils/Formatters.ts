@@ -1,4 +1,4 @@
-import { CURRENCY_CONFIG, DATE_FORMATS } from "@/Common/Constants/Constants";
+import { CURRENCY_CONFIG, DATE_FORMATS } from "../Constants/Constants";
 
 export const CurrencyFormatter = {
   format: (amount: number): string => {
