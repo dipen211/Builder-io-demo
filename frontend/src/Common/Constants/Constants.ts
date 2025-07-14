@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || "https://localhost:7195/api",
+  BASE_URL: process.env.REACT_APP_API_URL || "http://localhost:7195/api",
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
 } as const;
@@ -21,4 +21,11 @@ export const DATE_FORMATS = {
   DISPLAY: "MM/dd/yyyy",
   ISO: "yyyy-MM-dd",
   TIMESTAMP: "yyyy-MM-dd HH:mm:ss",
+} as const;
+
+// Backend connection status
+export const CONNECTION_CONFIG = {
+  BACKEND_HEALTH_CHECK: `${API_CONFIG.BASE_URL.replace("/api", "")}/health`,
+  RETRY_DELAY: 2000,
+  MAX_RETRIES: 3,
 } as const;
