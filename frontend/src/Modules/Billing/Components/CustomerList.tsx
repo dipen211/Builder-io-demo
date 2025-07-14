@@ -82,8 +82,11 @@ const CustomerList: React.FC = () => {
     try {
       // Mock adding customer
       const mockNewCustomer: Customer = {
-        ...newCustomer,
         id: customers.length + 1,
+        name: newCustomer.name,
+        email: newCustomer.email,
+        phone: newCustomer.phone || "",
+        address: newCustomer.address || "",
         invoices: [],
       };
 
