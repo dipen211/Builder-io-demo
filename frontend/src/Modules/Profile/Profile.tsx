@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { APP_CONFIG } from "@/Common/Constants/Constants";
+import { APP_CONFIG } from "../../Common/Constants/Constants";
 
 interface UserProfile {
   name: string;
