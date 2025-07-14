@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
 import { CURRENCY_CONFIG } from "../../../Common/Constants/Constants";
 import BillingApiService, {
@@ -28,11 +28,7 @@ const CreateInvoice: React.FC = () => {
     notes: "",
   });
 
-  useEffect(() => {
-    loadCustomers();
-  }, []);
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -77,7 +73,23 @@ const CreateInvoice: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
+
+  // Set default due date to 30 days from now
+  useEffect(() => {
+    if (!invoice.dueDate) {
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+      setInvoice((prev) => ({
+        ...prev,
+        dueDate: defaultDueDate.toISOString().split("T")[0],
+      }));
+    }
+  }, []); // Empty dependency array is correct here - we only want to set the initial date once
 
   const handleAddItem = () => {
     setInvoice({
@@ -210,18 +222,6 @@ const CreateInvoice: React.FC = () => {
     setError(null);
     setSuccess(null);
   };
-
-  // Set default due date to 30 days from now
-  useEffect(() => {
-    if (!invoice.dueDate) {
-      const defaultDueDate = new Date();
-      defaultDueDate.setDate(defaultDueDate.getDate() + 30);
-      setInvoice((prev) => ({
-        ...prev,
-        dueDate: defaultDueDate.toISOString().split("T")[0],
-      }));
-    }
-  }, []);
 
   return (
     <div className="create-invoice">
