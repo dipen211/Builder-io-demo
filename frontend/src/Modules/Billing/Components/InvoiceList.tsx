@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { CurrencyFormatter, DateFormatter } from "@/Common/Utils/Formatters";
-import { InvoiceStatus } from "@/Common/Constants/Enums";
+import {
+  CurrencyFormatter,
+  DateFormatter,
+} from "../../../Common/Utils/Formatters";
+import { InvoiceStatus } from "../../../Common/Constants/Enums";
 import { Invoice } from "../Model/Billing.interfaces";
 
 const InvoiceList: React.FC = () => {
