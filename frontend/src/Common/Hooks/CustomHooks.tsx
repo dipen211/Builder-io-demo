@@ -148,7 +148,7 @@ export function useFormValidation<T extends Record<string, any>>(
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const setTouched = (name: keyof T) => {
+  const setFieldTouched = (name: keyof T) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
@@ -190,7 +190,7 @@ export function useFormValidation<T extends Record<string, any>>(
     errors,
     touched,
     setValue,
-    setTouched,
+    setTouched: setFieldTouched,
     validateAll,
     reset,
     isValid: Object.keys(errors).length === 0,
