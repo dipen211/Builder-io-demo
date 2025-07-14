@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
 import BillingApiService, {
   Customer,
@@ -24,11 +24,7 @@ const CustomerList: React.FC = () => {
     address: "",
   });
 
-  useEffect(() => {
-    loadCustomers();
-  }, [pageNumber, searchTerm]);
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -70,7 +66,11 @@ const CustomerList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageNumber, searchTerm, pageSize]);
+
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
