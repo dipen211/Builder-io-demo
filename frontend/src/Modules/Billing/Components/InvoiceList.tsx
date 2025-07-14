@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CurrencyFormatter,
   DateFormatter,
@@ -6,8 +7,10 @@ import {
 import BillingApiService, {
   Invoice,
 } from "../../../Common/Services/BillingApiService";
+import { Routes } from "../../../Common/Constants/Routes";
 
 const InvoiceList: React.FC = () => {
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +136,12 @@ const InvoiceList: React.FC = () => {
     <div className="invoice-list">
       <div className="page-header">
         <h2 className="page-title">Invoices</h2>
-        <button className="btn btn-primary">Create New Invoice</button>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate(Routes.CREATE_INVOICE)}
+        >
+          Create New Invoice
+        </button>
       </div>
 
       {error && (
@@ -206,11 +214,23 @@ const InvoiceList: React.FC = () => {
                             padding: "0.5rem",
                           }}
                           onClick={() => {
-                            // In a real app, this would navigate to invoice detail
-                            console.log("View invoice:", invoice.id);
+                            navigate(`${Routes.INVOICES}/view/${invoice.id}`);
                           }}
                         >
                           View
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{
+                            marginRight: "0.5rem",
+                            fontSize: "0.8rem",
+                            padding: "0.5rem",
+                          }}
+                          onClick={() => {
+                            navigate(`${Routes.INVOICES}/edit/${invoice.id}`);
+                          }}
+                        >
+                          Edit
                         </button>
                         {invoice.status.toLowerCase() === "draft" && (
                           <button
