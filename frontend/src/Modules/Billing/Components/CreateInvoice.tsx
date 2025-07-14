@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { CurrencyFormatter } from "@/Common/Utils/Formatters";
+import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
 import {
   Customer,
   CreateInvoiceRequest,
   CreateInvoiceItemRequest,
 } from "../Model/Billing.interfaces";
-import { CURRENCY_CONFIG } from "@/Common/Constants/Constants";
+import { CURRENCY_CONFIG } from "../../../Common/Constants/Constants";
 
 interface InvoiceFormData {
   customerId: string;
