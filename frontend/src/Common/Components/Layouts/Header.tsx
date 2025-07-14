@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Routes } from "@/Common/Constants/Routes";
-import { NavigationTabs } from "@/Common/Constants/Enums";
-import { APP_CONFIG } from "@/Common/Constants/Constants";
+import { Routes } from "../../Constants/Routes";
+import { NavigationTabs } from "../../Constants/Enums";
+import { APP_CONFIG } from "../../Constants/Constants";
 import "./Header.css";
 
 const Header: React.FC = () => {
