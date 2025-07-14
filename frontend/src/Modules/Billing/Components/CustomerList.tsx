@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { CurrencyFormatter } from "@/Common/Utils/Formatters";
+import { CurrencyFormatter } from "../../../Common/Utils/Formatters";
 import { Customer, CreateCustomerRequest } from "../Model/Billing.interfaces";
-import { InvoiceStatus } from "@/Common/Constants/Enums";
+import { InvoiceStatus } from "../../../Common/Constants/Enums";
 
 const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
