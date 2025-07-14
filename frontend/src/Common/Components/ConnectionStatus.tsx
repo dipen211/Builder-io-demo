@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CONNECTION_CONFIG } from "../Constants/Constants";
+import { CONNECTION_CONFIG, APP_CONFIG } from "../Constants/Constants";
 
 interface ConnectionStatusProps {
   className?: string;
@@ -10,32 +10,49 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 }) => {
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(APP_CONFIG.DEMO_MODE);
 
   const checkConnection = async () => {
+    if (APP_CONFIG.DEMO_MODE) {
+      setIsConnected(false);
+      setLastChecked(new Date());
+      setIsDemoMode(true);
+      return;
+    }
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
       const response = await fetch(CONNECTION_CONFIG.BACKEND_HEALTH_CHECK, {
         method: "GET",
         headers: {
           Accept: "application/json",
         },
-        // Don't cache health checks
         cache: "no-cache",
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       setIsConnected(response.ok);
       setLastChecked(new Date());
+      setIsDemoMode(false);
     } catch (error) {
-      console.log("Backend connection check failed:", error);
+      console.log(
+        "Backend connection check failed (expected in demo mode):",
+        error,
+      );
       setIsConnected(false);
       setLastChecked(new Date());
+      setIsDemoMode(true);
     }
   };
 
   useEffect(() => {
     checkConnection();
 
-    // Check connection every 30 seconds
-    const interval = setInterval(checkConnection, 30000);
+    // Check connection every 60 seconds (less frequent to avoid spam)
+    const interval = setInterval(checkConnection, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -81,17 +98,29 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     );
   }
 
+  const statusColor = isDemoMode
+    ? "#FF9800"
+    : isConnected
+      ? "#4CAF50"
+      : "#F44336";
+  const statusText = isDemoMode
+    ? "Demo Mode"
+    : isConnected
+      ? "Backend Connected"
+      : "Backend Offline";
+  const statusIcon = isDemoMode ? "🎮" : isConnected ? "🟢" : "🔴";
+
   return (
     <div
-      className={`connection-status ${isConnected ? "connected" : "disconnected"} ${className}`}
+      className={`connection-status ${isDemoMode ? "demo" : isConnected ? "connected" : "disconnected"} ${className}`}
       style={{
         ...statusStyles,
-        color: isConnected ? "#4CAF50" : "#F44336",
+        color: statusColor,
       }}
     >
-      <span style={indicatorStyles}>{isConnected ? "🟢" : "🔴"}</span>
-      <span>{isConnected ? "Backend Connected" : "Backend Disconnected"}</span>
-      {lastChecked && (
+      <span style={indicatorStyles}>{statusIcon}</span>
+      <span>{statusText}</span>
+      {!isDemoMode && lastChecked && (
         <small style={lastCheckedStyles}>
           Last checked: {lastChecked.toLocaleTimeString()}
         </small>
@@ -99,11 +128,11 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       <button
         style={refreshBtnStyles}
         onClick={checkConnection}
-        title="Check connection now"
+        title={isDemoMode ? "Demo mode active" : "Check connection now"}
         onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
         onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
       >
-        🔄
+        {isDemoMode ? "⚙️" : "🔄"}
       </button>
     </div>
   );
