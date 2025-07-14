@@ -378,6 +378,57 @@ export class BillingApiService {
       },
     );
   }
+
+  // Individual invoice operations
+  static async getInvoice(id: number): Promise<Invoice> {
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Invoice>>(
+          `/invoices/${id}`,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch invoice");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getInvoice(id),
+    );
+  }
+
+  // Individual customer operations
+  static async getCustomer(id: number): Promise<Customer> {
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.get<ApiResponse<Customer>>(
+          `/customers/${id}`,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to fetch customer");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.getCustomer(id),
+    );
+  }
+
+  static async updateCustomer(
+    id: number,
+    customerData: CreateCustomerRequest,
+  ): Promise<Customer> {
+    return this.tryApiCall(
+      async () => {
+        const response = await httpRequest.put<ApiResponse<Customer>>(
+          `/customers/${id}`,
+          customerData,
+        );
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Failed to update customer");
+        }
+        return response.data.data;
+      },
+      () => DemoDataService.updateCustomer(id, customerData),
+    );
+  }
 }
 
 export default BillingApiService;
