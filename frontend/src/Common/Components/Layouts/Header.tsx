@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Routes } from "../../Constants/Routes";
 import { NavigationTabs } from "../../Constants/Enums";
 import { APP_CONFIG } from "../../Constants/Constants";
+import ConnectionStatus from "../ConnectionStatus";
 import "./Header.css";
 
 const Header: React.FC = () => {
@@ -61,7 +62,10 @@ const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-content">
-        <h1 className="header-title">{APP_CONFIG.NAME}</h1>
+        <div className="header-top">
+          <h1 className="header-title">{APP_CONFIG.NAME}</h1>
+          <ConnectionStatus />
+        </div>
         <nav className="header-navigation">
           <button
             className={`nav-tab ${activeTab === NavigationTabs.DASHBOARD ? "active" : ""}`}
