@@ -1,8 +1,8 @@
-import httpRequest from "@/Common/Services/httpRequest";
+import httpRequest from "../../httpRequest";
 import {
   DashboardData,
   DashboardStats,
-} from "@/Modules/Dashboard/Model/Dashboard.interfaces";
+} from "../../../../Modules/Dashboard/Model/Dashboard.interfaces";
 
 export class DashboardService {
   private static readonly BASE_PATH = "/dashboard";
