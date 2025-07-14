@@ -1,52 +1,133 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using System.Reflection;
 using backend.Models;
 using backend.Services;
+using FluentValidation;
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/billing-api-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-// Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Add Entity Framework with In-Memory Database
-builder.Services.AddDbContext<BillingContext>(opt =>
-    opt.UseInMemoryDatabase("BillingDb"));
-
-// Add CORS
-builder.Services.AddCors(options =>
+try
 {
-    options.AddPolicy("AllowReactApp",
-        policy =>
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Add Serilog
+    builder.Host.UseSerilog();
+
+    // Add services to the container.
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    
+    // Configure Swagger
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo
         {
-            policy.WithOrigins("http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+            Title = "Billing Management API",
+            Version = "v1",
+            Description = "A comprehensive billing management system API",
+            Contact = new OpenApiContact
+            {
+                Name = "Support Team",
+                Email = "support@billing.com"
+            }
         });
-});
 
-// Add services
-builder.Services.AddScoped<IBillingService, BillingService>();
+        // Include XML comments
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath);
+        }
+    });
 
-var app = builder.Build();
+    // Add Entity Framework with In-Memory Database
+    builder.Services.AddDbContext<BillingContext>(opt =>
+        opt.UseInMemoryDatabase("BillingDb"));
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Add CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowReactApp", policy =>
+        {
+            policy.WithOrigins(
+                "http://localhost:3000",
+                "https://localhost:3000",
+                "http://localhost:3001",
+                "https://localhost:3001"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
+    });
+
+    // Add AutoMapper
+    builder.Services.AddAutoMapper(typeof(Program));
+
+    // Add FluentValidation
+    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+    // Add application services
+    builder.Services.AddScoped<IBillingService, BillingService>();
+    builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+    // Add health checks
+    builder.Services.AddHealthChecks();
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Billing API V1");
+            c.RoutePrefix = string.Empty; // Serve Swagger UI at app's root
+        });
+    }
+
+    // Add security headers
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Add("X-Frame-Options", "DENY");
+        context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+        await next();
+    });
+
+    app.UseHttpsRedirection();
+    app.UseCors("AllowReactApp");
+    app.UseAuthentication();
+    app.UseAuthorization();
+    
+    // Add health check endpoint
+    app.MapHealthChecks("/health");
+    
+    app.MapControllers();
+
+    // Seed data
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<BillingContext>();
+        SeedData.Initialize(context);
+    }
+
+    Log.Information("Billing API starting up");
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-app.UseCors("AllowReactApp");
-app.UseAuthorization();
-app.MapControllers();
-
-// Seed data
-using (var scope = app.Services.CreateScope())
+catch (Exception ex)
 {
-    var context = scope.ServiceProvider.GetRequiredService<BillingContext>();
-    SeedData.Initialize(context);
+    Log.Fatal(ex, "Application terminated unexpectedly");
 }
-
-app.Run();
+finally
+{
+    Log.CloseAndFlush();
+}
