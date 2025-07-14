@@ -13,10 +13,17 @@
   padding: 1rem 2rem;
 }
 
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .header-title {
   font-size: 1.8rem;
   font-weight: 600;
-  margin: 0 0 1rem 0;
+  margin: 0;
   color: white;
 }
 
@@ -70,18 +77,27 @@
     padding: 1rem;
   }
 
+  .header-top {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
   .header-title {
     font-size: 1.5rem;
-    margin-bottom: 0.75rem;
   }
 
   .header-navigation {
     gap: 0.25rem;
+    width: 100%;
   }
 
   .nav-tab {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
+    flex: 1;
+    text-align: center;
   }
 
   .layout-content {
@@ -90,14 +106,68 @@
 }
 
 @media (max-width: 480px) {
-  .header-navigation {
-    justify-content: space-between;
+  .header-top {
+    align-items: center;
   }
 
   .nav-tab {
-    flex: 1;
-    text-align: center;
     padding: 0.5rem 0.5rem;
     font-size: 0.75rem;
+  }
+}
+
+/* Connection status styles */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.connection-status.connected {
+  color: #4caf50;
+}
+
+.connection-status.disconnected {
+  color: #f44336;
+}
+
+.connection-status.checking {
+  color: #ff9800;
+}
+
+.connection-status .status-indicator {
+  font-size: 0.8rem;
+}
+
+.connection-status .last-checked {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+}
+
+.connection-status .refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.connection-status .refresh-btn:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .connection-status {
+    font-size: 0.75rem;
+  }
+
+  .connection-status .last-checked {
+    display: none;
   }
 }
