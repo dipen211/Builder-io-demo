@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   CurrencyFormatter,
   DateFormatter,
 } from "../../../Common/Utils/Formatters";
-import { InvoiceStatus } from "../../../Common/Constants/Enums";
 import BillingApiService, {
   Invoice,
 } from "../../../Common/Services/BillingApiService";
@@ -17,11 +16,7 @@ const InvoiceList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    loadInvoices();
-  }, [pageNumber]);
-
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -92,7 +87,11 @@ const InvoiceList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageNumber, pageSize]);
+
+  useEffect(() => {
+    loadInvoices();
+  }, [loadInvoices]);
 
   const handleStatusUpdate = async (invoiceId: number, newStatus: string) => {
     try {
