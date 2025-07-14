@@ -83,17 +83,18 @@ const CreateInvoice: React.FC = () => {
     loadCustomers();
   }, [loadCustomers]);
 
-  // Set default due date to 30 days from now
+  // Initialize form with URL parameters and default values
   useEffect(() => {
-    if (!invoice.dueDate) {
-      const defaultDueDate = new Date();
-      defaultDueDate.setDate(defaultDueDate.getDate() + 30);
-      setInvoice((prev) => ({
-        ...prev,
-        dueDate: defaultDueDate.toISOString().split("T")[0],
-      }));
-    }
-  }, []); // Empty dependency array is correct here - we only want to set the initial date once
+    const customerId = searchParams.get("customerId");
+    const defaultDueDate = new Date();
+    defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+
+    setInvoice((prev) => ({
+      ...prev,
+      customerId: customerId || prev.customerId,
+      dueDate: prev.dueDate || defaultDueDate.toISOString().split("T")[0],
+    }));
+  }, [searchParams]);
 
   const handleAddItem = () => {
     setInvoice({
