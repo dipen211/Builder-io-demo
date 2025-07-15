@@ -72,8 +72,11 @@ try
         // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(BillingMappingProfile));
 
-    // Add FluentValidation
+        // Add FluentValidation
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+    // Register validators explicitly if needed (FluentValidation should auto-discover them)
+    // This ensures all validators in the backend.Validators namespace are registered
 
     // Add application services
     builder.Services.AddScoped<IBillingService, BillingService>();
