@@ -1,0 +1,81 @@
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-clickable {
+  cursor: pointer;
+}
+
+.stat-card-default {
+  border-left-color: #6c757d;
+}
+
+.stat-card-revenue {
+  border-left-color: #4caf50;
+}
+
+.stat-card-pending {
+  border-left-color: #ff9800;
+}
+
+.stat-card-customers {
+  border-left-color: #2196f3;
+}
+
+.stat-card-overdue {
+  border-left-color: #f44336;
+}
+
+.stat-card-title {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card-subtitle {
+  color: #666;
+  font-size: 0.8rem;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 0.75rem;
+  }
+
+  .stat-card-value {
+    font-size: 1.5rem;
+  }
+}
