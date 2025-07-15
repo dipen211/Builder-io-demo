@@ -1,0 +1,47 @@
+.status-badge {
+  border-radius: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.status-badge-small {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+.status-badge-medium {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.status-badge-large {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.status-draft {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-sent {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-paid {
+  background-color: #e8f5e8;
+  color: #388e3c;
+}
+
+.status-overdue {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.status-cancelled {
+  background-color: #f5f5f5;
+  color: #757575;
+}
