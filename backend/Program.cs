@@ -4,6 +4,7 @@ using Serilog;
 using System.Reflection;
 using backend.Models;
 using backend.Services;
+using backend.Mappings;
 using FluentValidation;
 
 // Configure Serilog
