@@ -1,0 +1,12 @@
+.navigation {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    gap: 0.25rem;
+    width: 100%;
+  }
+}
