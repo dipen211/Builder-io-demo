@@ -1,6 +1,6 @@
 namespace backend.Models
 {
-    public class Invoice
+        public class Invoice
     {
         public int Id { get; set; }
         public string InvoiceNumber { get; set; } = string.Empty;
@@ -13,6 +13,7 @@ namespace backend.Models
         public decimal Total { get; set; }
         public InvoiceStatus Status { get; set; }
         public List<InvoiceItem> Items { get; set; } = new();
+        public string? Notes { get; set; }
     }
 
     public class Customer
