@@ -69,8 +69,8 @@ try
         });
     });
 
-    // Add AutoMapper
-    builder.Services.AddAutoMapper(typeof(Program));
+        // Add AutoMapper
+    builder.Services.AddAutoMapper(typeof(BillingMappingProfile));
 
     // Add FluentValidation
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
