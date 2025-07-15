@@ -12,7 +12,7 @@ namespace backend.Mappings
             CreateMap<Invoice, InvoiceDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
-            CreateMap<CreateInvoiceDto, Invoice>()
+                        CreateMap<CreateInvoiceDto, Invoice>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.InvoiceNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => DateTime.Now))
