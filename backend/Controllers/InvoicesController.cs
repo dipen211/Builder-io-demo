@@ -138,10 +138,11 @@ namespace backend.Controllers
                     return BadRequest(ApiResponse<object>.ErrorResult($"Customer with ID {createInvoiceDto.CustomerId} not found"));
                 }
 
-                var createInvoiceRequest = new CreateInvoiceRequest
+                                var createInvoiceRequest = new CreateInvoiceRequest
                 {
                     CustomerId = createInvoiceDto.CustomerId,
                     DueDate = createInvoiceDto.DueDate,
+                    Notes = createInvoiceDto.Notes,
                     Items = createInvoiceDto.Items.Select(item => new CreateInvoiceItemRequest
                     {
                         Description = item.Description,
