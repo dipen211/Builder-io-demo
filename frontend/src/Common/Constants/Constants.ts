@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || "http://localhost:7195/api",
+  BASE_URL: process.env.REACT_APP_API_URL || "http://localhost:7000/api",
   TIMEOUT: 10000, // Reduced timeout for faster fallback
   RETRY_ATTEMPTS: 1, // Reduced retries for faster fallback
 } as const;

@@ -1,0 +1,96 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/customers/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/customers/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "Key": "customers"
+    },
+    {
+      "DownstreamPathTemplate": "/api/invoices/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/invoices/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "Key": "invoices"
+    },
+    {
+      "DownstreamPathTemplate": "/api/dashboard/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/dashboard/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST"],
+      "Key": "dashboard"
+    },
+    {
+      "DownstreamPathTemplate": "/api/billing/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/billing/{everything}",
+      "UpstreamHttpMethod": ["GET"],
+      "Key": "billing"
+    },
+    {
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "UpstreamPathTemplate": "/health/customers",
+      "UpstreamHttpMethod": ["GET"]
+    },
+    {
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7002
+        }
+      ],
+      "UpstreamPathTemplate": "/health/invoices",
+      "UpstreamHttpMethod": ["GET"]
+    },
+    {
+      "DownstreamPathTemplate": "/health",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "UpstreamPathTemplate": "/health/dashboard",
+      "UpstreamHttpMethod": ["GET"]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:7000",
+    "RequestIdKey": "X-Request-ID"
+  }
+}

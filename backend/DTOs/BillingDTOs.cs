@@ -115,7 +115,7 @@ namespace backend.DTOs
         public bool HasPreviousPage => PageNumber > 1;
     }
 
-    public class InvoiceFilterDto
+        public class InvoiceFilterDto
     {
         public string? Status { get; set; }
         public int? CustomerId { get; set; }
@@ -127,5 +127,10 @@ namespace backend.DTOs
         public int PageSize { get; set; } = 10;
         public string? SortBy { get; set; } = "Date";
         public string? SortDirection { get; set; } = "desc";
+    }
+
+    public class SendInvoiceEmailRequest
+    {
+        public string? EmailAddress { get; set; }
     }
 }
