@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 }
 
 export class DashboardService {
-  private static readonly BASE_PATH = "/api/dashboard";
+  private static readonly BASE_PATH = "/dashboard";
 
   static async getDashboardData(): Promise<DashboardData> {
     const response = await httpRequest.get<ApiResponse<DashboardData>>(
