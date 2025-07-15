@@ -46,11 +46,12 @@ namespace backend.Models
         Cancelled
     }
 
-    public class CreateInvoiceRequest
+        public class CreateInvoiceRequest
     {
         public int CustomerId { get; set; }
         public DateTime DueDate { get; set; }
         public List<CreateInvoiceItemRequest> Items { get; set; } = new();
+        public string? Notes { get; set; }
     }
 
     public class CreateInvoiceItemRequest
