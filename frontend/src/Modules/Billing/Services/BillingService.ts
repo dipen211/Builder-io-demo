@@ -30,8 +30,8 @@ interface PaginatedResult<T> {
 }
 
 export class BillingService {
-  private static readonly INVOICES_PATH = "/api/invoices";
-  private static readonly CUSTOMERS_PATH = "/api/customers";
+  private static readonly INVOICES_PATH = "/invoices";
+  private static readonly CUSTOMERS_PATH = "/customers";
 
   // Invoice endpoints
   static async getInvoices(filters?: InvoiceFilters): Promise<Invoice[]> {
@@ -195,7 +195,7 @@ export class BillingService {
   // Analytics endpoints
   static async getBillingStats(): Promise<BillingStats> {
     const response =
-      await httpRequest.get<ApiResponse<BillingStats>>("/api/billing/stats");
+      await httpRequest.get<ApiResponse<BillingStats>>("/billing/stats");
 
     if (!response.data.success) {
       throw new Error(response.data.message || "Failed to fetch billing stats");
@@ -206,7 +206,7 @@ export class BillingService {
 
   static async exportInvoices(format: "csv" | "pdf" = "csv"): Promise<Blob> {
     const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/invoices/export?format=${format}`,
+      `${process.env.REACT_APP_API_URL}/invoices/export?format=${format}`,
       {
         method: "GET",
         headers: {
