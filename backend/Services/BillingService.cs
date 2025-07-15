@@ -39,7 +39,7 @@ namespace backend.Services
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task<Invoice> CreateInvoiceAsync(CreateInvoiceRequest request)
+                public async Task<Invoice> CreateInvoiceAsync(CreateInvoiceRequest request)
         {
             var invoice = new Invoice
             {
@@ -47,7 +47,8 @@ namespace backend.Services
                 Date = DateTime.Now,
                 DueDate = request.DueDate,
                 CustomerId = request.CustomerId,
-                Status = InvoiceStatus.Draft
+                Status = InvoiceStatus.Draft,
+                Notes = request.Notes
             };
 
             foreach (var item in request.Items)
